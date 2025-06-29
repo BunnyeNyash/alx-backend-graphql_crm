@@ -1,8 +1,10 @@
 import graphene
 from graphene_django import DjangoObjectType
+from graphene_django.filter import DjangoFilterConnectionField
 from django.db import transaction, IntegrityError
 from django.core.exceptions import ValidationError
 from .models import Customer, Product, Order
+from .filters import CustomerFilter, ProductFilter, OrderFilter
 
 # GraphQL Types
 class CustomerType(DjangoObjectType):
@@ -133,9 +135,22 @@ class CreateOrder(graphene.Mutation):
 class Query(graphene.ObjectType):
     hello = graphene.String()
 
+    all_customers = DjangoFilterConnectionField(CustomerType, filterset_class=CustomerFilter)
+    all_products = DjangoFilterConnectionField(ProductType, filterset_class=ProductFilter)
+    all_orders = DjangoFilterConnectionField(OrderType, filterset_class=OrderFilter)
+
     def resolve_hello(self, info):
         return "Hello, GraphQL!"
 
+    def resolve_all_customers(self, info, **kwargs):
+        return Customer.objects.all()
+
+    def resolve_all_products(self, info, **kwargs):
+        return Product.objects.all()
+
+    def resolve_all_orders(self, info, **kwargs):
+        return Order.objects.all()
+        
 class Mutation(graphene.ObjectType):
     create_customer = CreateCustomer.Field()
     bulk_create_customers = BulkCreateCustomers.Field()
