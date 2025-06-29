@@ -6,6 +6,7 @@
 **Django App**: `crm`
 
 ## Repository Structure
+```
 alx-backend-graphql_crm/
 ├── alx-backend-graphql_crm/
 │   ├── __init__.py
@@ -19,6 +20,8 @@ alx-backend-graphql_crm/
 │   ├── filters.py
 ├── manage.py
 ├── seed_db.py
+└── README.md
+```
 
 ## Files:
 - `alx-backend-graphql_crm/settings.py`: Django project settings.
