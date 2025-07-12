@@ -3,6 +3,7 @@ from graphene_django import DjangoObjectType
 from graphene_django.filter import DjangoFilterConnectionField
 from django.db import transaction, IntegrityError
 from django.core.exceptions import ValidationError
+from django.db.models import Sum, Count
 from .models import Customer, Product, Order
 from .filters import CustomerFilter, ProductFilter, OrderFilter
 from django.utils import timezone
@@ -23,6 +24,11 @@ class OrderType(DjangoObjectType):
     class Meta:
         model = Order
         fields = ('id', 'customer', 'products', 'total_amount', 'order_date')
+
+class CRMReportType(graphene.ObjectType):
+    total_customers = graphene.Int()
+    total_orders = graphene.Int()
+    total_revenue = graphene.Decimal()
 
 # Input Types
 class CustomerInput(graphene.InputObjectType):
@@ -160,6 +166,7 @@ class UpdateLowStockProducts(graphene.Mutation):
 class Query(graphene.ObjectType):
     hello = graphene.String()
     recent_orders = graphene.List(OrderType)
+    crm_report = graphene.Field(CRMReportType)
 
     all_customers = DjangoFilterConnectionField(CustomerType, filterset_class=CustomerFilter)
     all_products = DjangoFilterConnectionField(ProductType, filterset_class=ProductFilter)
@@ -180,6 +187,16 @@ class Query(graphene.ObjectType):
     def resolve_recent_orders(self, info):
         one_week_ago = timezone.now() - timedelta(days=7)
         return Order.objects.filter(order_date__gte=one_week_ago)
+
+    def resolve_crm_report(self, info):
+        total_customers = Customer.objects.count()
+        total_orders = Order.objects.count()
+        total_revenue = Order.objects.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+        return CRMReportType(
+            total_customers=total_customers,
+            total_orders=total_orders,
+            total_revenue=total_revenue
+        )
         
 class Mutation(graphene.ObjectType):
     create_customer = CreateCustomer.Field()
