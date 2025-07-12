@@ -5,6 +5,8 @@ from django.db import transaction, IntegrityError
 from django.core.exceptions import ValidationError
 from .models import Customer, Product, Order
 from .filters import CustomerFilter, ProductFilter, OrderFilter
+from django.utils import timezone
+from datetime import timedelta
 
 # GraphQL Types
 class CustomerType(DjangoObjectType):
@@ -134,6 +136,7 @@ class CreateOrder(graphene.Mutation):
 # Query and Mutation Classes
 class Query(graphene.ObjectType):
     hello = graphene.String()
+    recent_orders = graphene.List(OrderType)
 
     all_customers = DjangoFilterConnectionField(CustomerType, filterset_class=CustomerFilter)
     all_products = DjangoFilterConnectionField(ProductType, filterset_class=ProductFilter)
@@ -150,6 +153,10 @@ class Query(graphene.ObjectType):
 
     def resolve_all_orders(self, info, **kwargs):
         return Order.objects.all()
+
+    def resolve_recent_orders(self, info):
+        one_week_ago = timezone.now() - timedelta(days=7)
+        return Order.objects.filter(order_date__gte=one_week_ago)
         
 class Mutation(graphene.ObjectType):
     create_customer = CreateCustomer.Field()
