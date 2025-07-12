@@ -3,7 +3,7 @@
 # Get the directory of the script
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Store current working directory
-CWD=$(pwd)
+cwd=$(pwd)
 
 # Absolute path to Python and manage.py
 PYTHON="alx-backend-graphql_crm/venv/bin/python"
@@ -43,4 +43,5 @@ else
 fi
 
 # Return to original directory
-cd "$CWD"
+cd "$cwd"
+
